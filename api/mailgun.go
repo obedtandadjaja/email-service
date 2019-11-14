@@ -7,14 +7,16 @@ import (
 	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/sirupsen/logrus"
 )
 
 type SendRequest struct {
 	Sender        string   `json:"sender"`
-	Recipients    []string `json:"recipient"`
+	Recipients    []string `json:"recipients"`
 	Subject       string   `json:"subject"`
 	Body          string   `json:"body"`
-	BccRecipients []string `json:"body"`
+	BodyHtml      string   `json:"bodyHtml"`
+	BccRecipients []string `json:"bccRecipients"`
 }
 
 type SendResponse struct {
@@ -33,9 +35,15 @@ func (server Server) Send(w http.ResponseWriter, r *http.Request, p httprouter.P
 	request, err := parseSendRequest(r)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
 	}
 
+	logrus.Warn(request)
+
 	message := server.mailgun.NewMessage(request.Sender, request.Subject, request.Body, request.Recipients...)
+	if request.BodyHtml != "" {
+		message.SetHtml(request.BodyHtml)
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
@@ -43,17 +51,20 @@ func (server Server) Send(w http.ResponseWriter, r *http.Request, p httprouter.P
 	// Send the message	with a 10 second timeout
 	msg, id, err := server.mailgun.Send(ctx, message)
 	if err != nil {
+		logrus.Warn(err)
 		http.Error(w, "Request timeout", http.StatusRequestTimeout)
+		return
 	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
 
 	response := SendResponse{
 		Message: msg,
 		EmailId: id,
 	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(response); err != nil {
+		logrus.Warn(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }

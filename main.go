@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/mailgun/mailgun-go/v3"
@@ -23,8 +22,6 @@ func init() {
 }
 
 func main() {
-	fmt.Println("hello")
-
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.InfoLevel)
