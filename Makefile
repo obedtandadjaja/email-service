@@ -13,3 +13,13 @@ run:
 	go clean; \
 	go build; \
 	./email-service
+
+test:
+	export ENV=$(ENV) \
+         APP_HOST=$(APP_HOST) \
+         APP_PORT=$(APP_PORT) \
+         MAILGUN_DOMAIN=$(MAILGUN_DOMAIN) \
+         MAILGUN_API_KEY=$(MAILGUN_API_KEY); \
+	go clean; \
+	go build; \
+  go test -v -race ./...
