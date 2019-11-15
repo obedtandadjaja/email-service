@@ -68,6 +68,3 @@ func (server Server) Send(w http.ResponseWriter, r *http.Request, p httprouter.P
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
-
-func mailgunRoutes(server Server) {
-}

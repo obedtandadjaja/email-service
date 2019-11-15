@@ -19,6 +19,7 @@ func Start(AppUrl string, mailgun *mailgun.MailgunImpl) {
 		router:  httprouter.New(),
 	}
 	server.router.POST("/api/v1/send", server.Send)
+	server.router.GET("/api/health", server.Health)
 
 	logrus.Info("App running on " + AppUrl)
 	logrus.Fatal(http.ListenAndServe(AppUrl, server.router))
