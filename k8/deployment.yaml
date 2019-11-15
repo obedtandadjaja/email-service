@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: email-service{{ENV}}-deployment
+  labels:
+    app: email-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: email-service
+  template:
+    metadata:
+      labels:
+        app: email-service
+    spec:
+      containers:
+        - name: email-service{{ENV}}
+          image: gcr.io/obedt-dev/email-service:{{IMAGE_TAG}}
+          envFrom:
+            - configMapRef:
+                name: email-service{{ENV}}-env
+            - secretRef:
+                name: email-service{{ENV}}-env
+          env:
+            - name: APP_PORT
+              value: "3000"
+          readinessProbe:
+            httpGet:
+              path: "/health"
+              port: 3000
+            initialDelaySeconds: 2
+            timeoutSeconds: 5
+            periodSeconds: 6
+            successThreshold: 2
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 150m
+              memory: 200Mi
+            limits:
+              cpu: 200m
+              memory: 220Mi
+          ports:
+            - containerPort: 3000
