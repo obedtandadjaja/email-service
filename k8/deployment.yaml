@@ -22,9 +22,6 @@ spec:
                 name: email-service{{ENV}}-env
             - secretRef:
                 name: email-service{{ENV}}-env
-          env:
-            - name: APP_PORT
-              value: "3000"
           readinessProbe:
             httpGet:
               path: "/api/health"
